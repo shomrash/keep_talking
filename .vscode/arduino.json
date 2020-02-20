@@ -1,0 +1,6 @@
+{
+    "board": "arduino:avr:nano",
+    "configuration": "cpu=atmega328old",
+    "port": "COM6",
+    "sketch": "Arduino\\keep_talking\\keep_talking.ino"
+}
