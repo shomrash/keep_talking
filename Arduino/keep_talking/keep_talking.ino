@@ -1,9 +1,17 @@
 #include "FastLED.h"
 #include "GyverButton.h"
 #include "GyverTimer.h"
-#include "U8glib.h"
+#include <Wire.h>
+//#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#include <Fonts/FreeSerif9pt7b.h>
 
-int curent_module = 0;      //номер выбранного модуля
+#define SCREEN_WIDTH 128 // OLED display width, in pixels
+#define SCREEN_HEIGHT 32 // OLED display height, in pixels
+// Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+int curent_module = 9;      //номер выбранного модуля
 int errors = 0;             //кол-во ошибок
 bool new_module = false;    //переменная для перехода 
 int t_time = 0;             //переменная времени
@@ -32,6 +40,8 @@ void loop(){
     case 4:
         loop_morze();
         break;
+    case 9: 
+        loop_password();
     default:
         test();
         break;
@@ -227,9 +237,143 @@ void loop_morze(){
             m_pos = 54;
         }
     }
-    
+}
+
+//модуль 9 пароль
+GButton p_b1(2);
+GButton p_b2(3);
+GButton p_b3(4);
+GButton p_b4(5);
+GButton p_b5(6);
+#define p_let_max 4
+char letters[4][5] = {
+                    {'P', '4', '8', '3', '6'},
+                    {'2', 'I', '8', '3', '6'},
+                    {'2', '4', 'D', '3', '6'},
+                    {'2', '4', '8', 'R', '6'}
+                    };
+int letter[4] = {0,1,2,3};
+
+void setup_password(){
+    if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) { 
+        Serial.println("SSD1306 allocation failed");
+    }
+
+    delay(2000);
+    display.setFont(&FreeSerif9pt7b);
+    display.setTextSize(2);             
+    display.setTextColor(SSD1306_INVERSE);  
+    display.clearDisplay();
+
+    for (byte i = 0; i < 4; i++)
+    {
+        display.drawRect(i*32, 0, 32, display.height(), SSD1306_WHITE);
+        display.setCursor(i*32+3,26);             
+        display.println(letters[i][letter[i]]);
+    }
+    display.display(); 
+
     
 }
+void loop_password(){
+    p_b1.tick();
+    if (p_b1.isSingle()){
+        letter[0]++;
+        if (letter[0]>p_let_max)
+        {
+            letter[0] = 0;
+        }
+        p_refill(0);
+    }
+    if (p_b1.isDouble()){
+        letter[0]--;
+        if (letter[0]<0)
+        {
+            letter[0] = p_let_max;
+        }
+        p_refill(0);
+    }
+
+    p_b2.tick();
+    if (p_b2.isSingle()){
+        letter[1]++;
+        if (letter[1]>p_let_max)
+        {
+            letter[1] = 0;
+        }
+        p_refill(1);
+    }
+    if (p_b2.isDouble()){
+        letter[1]--;
+        if (letter[1]<0)
+        {
+            letter[1] = p_let_max;
+        }
+        p_refill(1);
+    }
+
+    p_b3.tick();
+    if (p_b3.isSingle()){
+        letter[2]++;
+        if (letter[2]>p_let_max)
+        {
+            letter[2] = 0;
+        }
+        p_refill(2);
+    }
+    if (p_b3.isDouble()){
+        letter[2]--;
+        if (letter[2]<0)
+        {
+            letter[2] = p_let_max;
+        }
+        p_refill(2);
+    }
+
+    p_b4.tick();
+    if (p_b4.isSingle()){
+        letter[3]++;
+        if (letter[3]>p_let_max)
+        {
+            letter[3] = 0;
+        }
+        p_refill(3);
+    }
+    if (p_b4.isDouble()){
+        letter[3]--;
+        if (letter[3]<0)
+        {
+            letter[3] = p_let_max;
+        }
+        p_refill(3);
+    }
+
+    p_b5.tick();
+    if (p_b5.isClick()){
+        String tmp = "";
+        for (byte i = 0; i < 5; i++)
+        {
+            tmp += letters[i][letter[i]];
+        }
+        if (tmp == "PIDR"){
+            next();
+        }else
+        {
+            error();
+        }
+        
+    }
+}
+void p_refill(byte i){
+    display.fillRect(i*32+1, 1, 30, display.height()-2, SSD1306_BLACK);
+    display.setCursor(i*32+3,26);             
+    display.println(letters[i][letter[i]]);
+
+    display.display(); 
+}
+
+
+
 
 //методы для упрощения работы
 void setup_module(){
@@ -243,7 +387,10 @@ void setup_module(){
         break;
     case 4:
         setup_morze();
-    break;
+        break;
+    case 9:
+        setup_password();
+        break;
     default:
         break;
     }
