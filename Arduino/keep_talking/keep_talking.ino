@@ -1,8 +1,9 @@
 #include "FastLED.h"
 #include "GyverButton.h"
 #include "GyverTimer.h"
+#include "U8glib.h"
 
-int curent_module = 4;      //номер выбранного модуля
+int curent_module = 0;      //номер выбранного модуля
 int errors = 0;             //кол-во ошибок
 bool new_module = false;    //переменная для перехода 
 int t_time = 0;             //переменная времени
@@ -46,10 +47,9 @@ void loop(){
 //тестовый воид
 void test(){
     pinMode(2, OUTPUT);
-    pinMode(6, OUTPUT);
 
-    digitalWrite(6, 0);
-    digitalWrite(2, !digitalRead(4));
+    digitalWrite(2, 1);
+
 }
 
 
@@ -104,12 +104,12 @@ void setup_button(){
     pinMode(b_button_pin, INPUT_PULLUP);
     pinMode(b_led_pin, OUTPUT);
 
-    /*
+    
     pinMode(10, OUTPUT);
     pinMode(12, OUTPUT);
     digitalWrite(10,0);
     digitalWrite(12,1);
-    */
+    
 
     b_butt.setTickMode(MANUAL);
 
@@ -124,9 +124,9 @@ void loop_button(){
             if (b_butt.isHolded()){
                 b_brightness = 100;
                 b_dir = true;
-                //b_time = random(0,10);
+                b_time = random(0,6);
                 
-                b_time = b_butt.getHoldClicks();
+                //b_time = b_butt.getHoldClicks();
 
                 Serial.write("Holding. Release on: ");
                 Serial.println(map(b_time, 0,5,0,9));
@@ -161,10 +161,6 @@ void loop_button(){
                     error();
                 }
             }
-        }else
-        {
-            error();
-            b_brightness = 0;
         }
         
 
@@ -183,13 +179,12 @@ void loop_button(){
 #define m_led_pin 2
 #define m_but_pin 3
 GButton m_butt(m_but_pin);
-GTimer m_timer_f(MS, 700);
+GTimer m_timer_f(MS, 500);
 byte m_old_pos = 0;
 byte m_pot_pos = 0;
-int64_t m_morze = 187;//*--* ** -** --- *-*    10111110001010001110100011111100101110 18 
-int64_t m_mask = 3;
-byte m_pos = 7; 
-bool m_state = 1;
+int64_t m_morze = 0B10101000101100010110110100010110110100011010110110;//**** *- *--* *--* -*-- 50
+int64_t m_mask = 1;
+byte m_pos = 54; 
 void setup_morze(){
     pinMode(m_pot_pin, INPUT);
     pinMode(m_led_pin, OUTPUT);
@@ -203,23 +198,7 @@ void setup_morze(){
     pinMode(18, OUTPUT);
     analogWrite(18, 0);
 
-    for (byte i = 0; i < 19; i++)
-    {
-        int tmp = (m_morze >> (18-i)*2) & m_mask;
-        
-        if (tmp  == 0){
-            Serial.print(" ");
-        }else
-        {
-            if (tmp == 2)
-            {
-                Serial.print("*");
-            }else
-            {
-                Serial.print("-");
-            }
-        }
-    }
+    
 }
 void loop_morze(){
     m_pot_pos = map(analogRead(m_pot_pin),0,1023,0,6);
@@ -232,43 +211,21 @@ void loop_morze(){
     }
     m_butt.tick();  
     if (m_butt.isHolded()) {
-        Serial.print("Holded: ");  
-        Serial.println(m_pot_pos); 
+        if (m_pot_pos == 4) {
+            next();
+        }
+        else{
+            error();
+        }
+             
     }
 
     if(m_timer_f.isReady()){
-        if (m_state)
-        {
-            int tmp_1 = (m_morze >> m_pos) & 1;
-            int tmp_2 = (m_morze >> m_pos-1) & 1;
-
-            if (!tmp_1 && !tmp_2){
-                digitalWrite(m_led_pin, 0);
-                m_state = 0;
-                m_pos--;
-            }else
-            {
-                if (tmp_1 && !tmp_2)
-                {
-                    digitalWrite(m_led_pin, 1);
-                    m_state = 0;
-                    m_pos--;
-                }else
-                {
-                    digitalWrite(m_led_pin, 1);
-                    m_state = m_pos % 2;
-                    m_pos--;
-                }
-                
-            }
-        }else
-        {
-            digitalWrite(m_led_pin, 0);
-            m_state = 1;
-            m_pos--;
+        digitalWrite(m_led_pin, (m_morze >> m_pos) & 1);
+        m_pos--;
+        if (m_pos <= 0) {
+            m_pos = 54;
         }
-        
-        
     }
     
     
@@ -327,11 +284,11 @@ GTimer t_timer(MS, 1000);
 void timer(){
     if (t_timer.isReady()){
         t_time++;
-        /*
+        
         Serial.print(t_time/60);
         Serial.print(":");
         Serial.println(t_time - (int)(t_time/60)*60);
-        */
+        
     }
 }
 
