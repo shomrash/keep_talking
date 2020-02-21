@@ -1,12 +1,14 @@
 #include "U8glib.h"
-U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE|U8G_I2C_OPT_DEV_0);
+U8GLIB_SSD1306_128X32 u8g(U8G_I2C_OPT_NONE);
 
 void draw(void) {
   // graphic commands to redraw the complete screen should be placed here  
-  u8g.setFont(u8g_font_unifont);
-  u8g.setPrintPos(0, 20); 
-  // call procedure from base class, http://arduino.cc/en/Serial/Print
-  u8g.print("Hello World!");
+  u8g.setFont(u8g_font_gdr25);
+ 
+  u8g.drawFrame(0,0,128,32);
+  u8g.drawLine(31, 0, 31, 32);
+  u8g.drawLine(63, 0, 63, 32);
+  u8g.drawLine(94, 0, 94, 32);  
 }
 
 void setup(void) {
