@@ -11,7 +11,7 @@
 // Declaration for an SSD1306 display connected to I2C (SDA, SCL pins)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
-int curent_module = 9;      //номер выбранного модуля
+int curent_module = 2;      //номер выбранного модуля
 int errors = 0;             //кол-во ошибок
 bool new_module = false;    //переменная для перехода 
 int t_time = 0;             //переменная времени
@@ -101,7 +101,7 @@ void loop_wires(){
 }
 
 //блок с модулем 2. Кнопка
-#define b_button_pin 3
+#define b_button_pin 6
 #define b_led_pin 11
 int b_brightness = 0;
 bool b_dir;
